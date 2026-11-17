@@ -1,0 +1,10 @@
+target/
+*.class
+.env
+.env.*
+ltpa.keys
+*.ltpa.keys
+.idea/
+.vscode/
+.DS_Store
+.server-cert.pem

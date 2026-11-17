@@ -1,0 +1,8 @@
+Bundle-SymbolicName: com.ibm.liberty.ltpa
+Bundle-Name: Liberty LTPA Key Utilities
+Bundle-Description: Java API to create LTPA keys, encrypted or unencrypted, in memory
+Bundle-Version: ${project.version}
+Export-Package: com.ibm.liberty.ltpa;version=${project.version}
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.8))"
+-noextraheaders: true
+-snapshot: SNAPSHOT

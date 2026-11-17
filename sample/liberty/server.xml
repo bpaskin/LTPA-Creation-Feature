@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Liberty server for the ltpa-1.0 sample.
+
+  The passwords come from the environment, run-sample.sh creates them. HTTPS is the only endpoint, it
+  listens on the loopback address and uses the key store that Liberty generates on first start. The
+  application needs no user id and password.
+-->
+<server description="LTPA feature sample">
+
+    <featureManager>
+        <feature>restfulWS-4.0</feature>
+        <feature>jsonb-3.0</feature>
+        <feature>mpOpenAPI-4.1</feature>
+        <feature>appSecurity-6.0</feature>
+        <feature>transportSecurity-1.0</feature>
+        <feature>usr:ltpa-1.0</feature>
+    </featureManager>
+
+    <variable name="sample.https.port" defaultValue="19443"/>
+
+    <httpEndpoint id="defaultHttpEndpoint" host="127.0.0.1" httpPort="-1" httpsPort="${sample.https.port}"/>
+
+    <keyStore id="defaultKeyStore" password="${env.LTPA_SAMPLE_KEYSTORE_PASSWORD}"/>
+
+    <ltpa keysPassword="${env.LTPA_SAMPLE_LTPA_PASSWORD}"/>
+
+    <webApplication id="ltpa-sample" location="ltpa-sample.war" contextRoot="/ltpa-sample"/>
+
+</server>

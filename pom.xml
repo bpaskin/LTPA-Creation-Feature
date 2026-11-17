@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.ibm.liberty</groupId>
+    <artifactId>ltpa</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+
+    <name>Liberty LTPA Key Utilities (ltpa-1.0)</name>
+    <description>
+        Liberty user feature ltpa-1.0. Provides a Java API to create LTPA keys in memory,
+        either encrypted with a key password (like securityUtility createLTPAKeys) or
+        unencrypted, so that one set of keys can be re-encrypted with a node-specific
+        password for every Liberty node behind a load balancer.
+    </description>
+
+    <properties>
+        <maven.compiler.release>8</maven.compiler.release>
+        <maven.compiler.testRelease>17</maven.compiler.testRelease>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <junit.version>6.1.3</junit.version>
+        <!-- Liberty jars are not published to Maven Central, see the install-liberty-jars profile -->
+        <liberty.jars.version>1.0.114</liberty.jars.version>
+        <wlpHome>${env.WLP_HOME}</wlpHome>
+    </properties>
+
+    <!--
+      The Liberty jars live in $WLP_HOME/lib and are not on Maven Central.
+      Install them once into the local repository:
+
+        mvn generate-sources -Pinstall-liberty-jars -DwlpHome=/path/to/wlp
+
+      Then build normally:
+
+        mvn clean package
+    -->
+    <dependencies>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>osgi.core</artifactId>
+            <version>8.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.ibm.ws</groupId>
+            <artifactId>com.ibm.ws.crypto.passwordutil</artifactId>
+            <version>${liberty.jars.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- The LTPA key code is internal to Liberty. It is used by reflection at runtime, and by the tests as a reference. -->
+        <dependency>
+            <groupId>com.ibm.ws</groupId>
+            <artifactId>com.ibm.ws.crypto.ltpakeyutil</artifactId>
+            <version>${liberty.jars.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.ibm.ws</groupId>
+            <artifactId>com.ibm.ws.kernel.service</artifactId>
+            <version>1.3.114</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.ibm.ws</groupId>
+            <artifactId>com.ibm.ws.logging</artifactId>
+            <version>${liberty.jars.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.ibm.ws</groupId>
+            <artifactId>com.ibm.ws.kernel.boot</artifactId>
+            <version>${liberty.jars.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <profiles>
+        <profile>
+            <id>install-liberty-jars</id>
+            <build>
+                <defaultGoal>generate-sources</defaultGoal>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-install-plugin</artifactId>
+                        <version>3.2.0</version>
+                        <executions>
+                            <execution>
+                                <id>install-ltpakeyutil</id>
+                                <phase>generate-sources</phase>
+                                <goals><goal>install-file</goal></goals>
+                                <configuration>
+                                    <file>${wlpHome}/lib/com.ibm.ws.crypto.ltpakeyutil_${liberty.jars.version}.jar</file>
+                                    <groupId>com.ibm.ws</groupId>
+                                    <artifactId>com.ibm.ws.crypto.ltpakeyutil</artifactId>
+                                    <version>${liberty.jars.version}</version>
+                                    <packaging>jar</packaging>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>install-passwordutil</id>
+                                <phase>generate-sources</phase>
+                                <goals><goal>install-file</goal></goals>
+                                <configuration>
+                                    <file>${wlpHome}/lib/com.ibm.ws.crypto.passwordutil_${liberty.jars.version}.jar</file>
+                                    <groupId>com.ibm.ws</groupId>
+                                    <artifactId>com.ibm.ws.crypto.passwordutil</artifactId>
+                                    <version>${liberty.jars.version}</version>
+                                    <packaging>jar</packaging>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>install-kernel-service</id>
+                                <phase>generate-sources</phase>
+                                <goals><goal>install-file</goal></goals>
+                                <configuration>
+                                    <file>${wlpHome}/lib/com.ibm.ws.kernel.service_1.3.114.jar</file>
+                                    <groupId>com.ibm.ws</groupId>
+                                    <artifactId>com.ibm.ws.kernel.service</artifactId>
+                                    <version>1.3.114</version>
+                                    <packaging>jar</packaging>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>install-logging</id>
+                                <phase>generate-sources</phase>
+                                <goals><goal>install-file</goal></goals>
+                                <configuration>
+                                    <file>${wlpHome}/lib/com.ibm.ws.logging_${liberty.jars.version}.jar</file>
+                                    <groupId>com.ibm.ws</groupId>
+                                    <artifactId>com.ibm.ws.logging</artifactId>
+                                    <version>${liberty.jars.version}</version>
+                                    <packaging>jar</packaging>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>install-kernel-boot</id>
+                                <phase>generate-sources</phase>
+                                <goals><goal>install-file</goal></goals>
+                                <configuration>
+                                    <file>${wlpHome}/lib/com.ibm.ws.kernel.boot_${liberty.jars.version}.jar</file>
+                                    <groupId>com.ibm.ws</groupId>
+                                    <artifactId>com.ibm.ws.kernel.boot</artifactId>
+                                    <version>${liberty.jars.version}</version>
+                                    <packaging>jar</packaging>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+    <build>
+        <!-- Liberty finds the bundle of ltpa-1.0.mf by symbolic name and version in this file name -->
+        <finalName>com.ibm.liberty.ltpa_${project.version}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.16.0</version>
+                <configuration>
+                    <!-- Java 8 is an obsolete release value on newer JDKs, but it is the supported baseline for Java EE 7 -->
+                    <compilerArgs>
+                        <arg>-Xlint:-options</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.6.1</version>
+            </plugin>
+
+            <!-- bnd.bnd drives the OSGi MANIFEST.MF generation -->
+            <plugin>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-maven-plugin</artifactId>
+                <version>7.4.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>bnd-process</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.5.1</version>
+                <configuration>
+                    <archive>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
